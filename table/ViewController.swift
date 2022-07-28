@@ -20,6 +20,7 @@ class ViewController: UIViewController {
         configure()
     }
     func configure() -> Void {
+        searchBar.text = ""
         userTableView.delegate = self
         userTableView.dataSource = self
         self.navigationItem.titleView = searchBar
@@ -32,16 +33,39 @@ class ViewController: UIViewController {
     func fetchUserData(completion: @escaping () -> ()) {
 
         // weak self - prevent retain cycles
-        apiService.getUserInfo(for: searchBar.text!) { [weak self] (result) in
-            switch result {
-            case .success(let user):
-                self?.searchUsers = user.items
-                completion()
-            case .failure(let error):
-                // Something is wrong with the JSON file
-                print("Error processing json data: \(error)")
+        
+        if searchBar.text != nil && validateUsername(str: searchBar.text!){
+            apiService.getUserInfo(for: searchBar.text!) { [weak self] (result) in
+                switch result {
+                case .success(let user):
+                    self?.searchUsers = user.items
+                    if(self?.searchUsers.count == 0) {
+                        let alert =  UIAlertController(title: "Not found user", message:"Try Again", preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                        self?.present(alert, animated: true, completion: nil)
+                    }
+                    completion()
+                case .failure(let error):
+                    // Something is wrong with the JSON file
+                    print("Error processing json data: \(error)")
+                    
+                }
             }
+        }else {
+            let alert =  UIAlertController(title: "Wrong format", message:"Input again", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
         }
+    }
+    func validateUsername(str: String) -> Bool
+    {
+        do
+        {
+            let regex = try NSRegularExpression(pattern: "^[0-9a-zA-Z\\-]{1,18}$", options: .caseInsensitive)
+            if regex.matches(in: str, options: [], range: NSMakeRange(0, str.count)).count > 0 {return true}
+        }
+        catch {}
+        return false
     }
 }
 
@@ -76,8 +100,11 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource    {
 extension ViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         fetchUserData {
+            print("ok")
             self.userTableView.reloadData()
+            
         }
+       
         searchBar.resignFirstResponder()
     }
 }

@@ -17,11 +17,13 @@ class HomeCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
        
-      
+//        viewCell.layer.shadowOpacity = 1.0
+//        viewCell.layer.shadowColor = UIColor.black.cgColor
+//        viewCell.layer.shadowOffset = CGSize(width: 1, height: 1)
+//        viewCell.layer.masksToBounds = false
         viewCell.layer.cornerRadius = 20
         viewCell.layer.borderWidth = 1
         viewCell.layer.borderColor = UIColor.black.cgColor
-        imageVoew.layer.masksToBounds =  true
         imageVoew.layer.cornerRadius = imageVoew.frame.height/2
     }
 
@@ -55,13 +57,12 @@ class HomeCell: UITableViewCell {
                 print("DataTask error: \(error.localizedDescription)")
                 return
             }
-            
             guard let data = data else {
                 // Handle Empty Data
                 print("Empty Data")
                 return
             }
-            
+
             DispatchQueue.main.async {
                 if let image = UIImage(data: data) {
                     self.imageVoew.image = image
